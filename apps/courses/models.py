@@ -20,6 +20,8 @@ class Course(models.Model):
     category = models.CharField(max_length=20, verbose_name='课程类别', default='后端开发')
     tag = models.CharField(max_length=10, verbose_name='课程标签', default='')
     teacher = models.ForeignKey(Teacher, verbose_name='课程教师', null=True, blank=True, on_delete=models.CASCADE)
+    need_know = models.CharField(max_length=300, verbose_name='课程须知', default='')
+    teacher_tell = models.CharField(max_length=300, verbose_name='老师告诉你', default='')
 
     def __str__(self):
         return self.name
@@ -36,6 +38,8 @@ class Course(models.Model):
     class Meta:
         verbose_name = '课程'
         verbose_name_plural = verbose_name
+
+
 
 
 class Lesson(models.Model):
