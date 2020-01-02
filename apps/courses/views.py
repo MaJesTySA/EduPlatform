@@ -6,7 +6,7 @@ from django.http import HttpResponse
 
 # Create your views here.
 from courses.models import Course, CourseResource
-from operation.models import UserFavorite
+from operation.models import UserFavorite, CourseComment
 
 
 class CourseListView(View):
@@ -69,3 +69,36 @@ class CourseInfoView(View):
             'course': course,
             'course_resources': all_resources
         })
+
+
+class CourseCommentView(View):
+    def get(self, request, course_id):
+        course = Course.objects.get(id=int(course_id))
+        all_resources = CourseResource.objects.filter(course=course)
+        all_comments = CourseComment.objects.all()
+        return render(request, 'course-comment.html', {
+            'course': course,
+            'course_resources': all_resources,
+            'all_comments': all_comments
+        })
+
+
+class AddCommentView(View):
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponse('{"status": "fail", "msg":"未登录"}',
+                                content_type='application/json')
+        course_id = request.POST.get('course_id', 0)
+        comments = request.POST.get('comments', '')
+        if int(course_id) > 0 and comments:
+            course_comment = CourseComment()
+            course = Course.objects.get(id=int(course_id))
+            course_comment.course = course
+            course_comment.comments = comments
+            course_comment.user = request.user
+            course_comment.save()
+            return HttpResponse('{"status": "success", "msg":"评论成功"}',
+                                content_type='application/json')
+        else:
+            return HttpResponse('{"status": "fail", "msg":"评论失败"}',
+                                content_type='application/json')
