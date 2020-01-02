@@ -75,7 +75,7 @@ class CourseCommentView(View):
     def get(self, request, course_id):
         course = Course.objects.get(id=int(course_id))
         all_resources = CourseResource.objects.filter(course=course)
-        all_comments = CourseComment.objects.all()
+        all_comments = CourseComment.objects.filter(course=course).order_by("-id")
         return render(request, 'course-comment.html', {
             'course': course,
             'course_resources': all_resources,
