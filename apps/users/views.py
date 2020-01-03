@@ -7,6 +7,7 @@ from django.contrib.auth.hashers import make_password
 from users.forms import LoginForm, RegisterForm, ForgetPwdForm, ResetPwdForm
 from users.models import UserProfile, EmailVerifyRecord
 from utils.send_email import send_register_email
+from utils.utils import LoginRequired
 
 
 class RegisterView(View):
@@ -124,3 +125,10 @@ class CustomBackend(ModelBackend):
                 return user
         except Exception as e:
             return None
+
+
+class UserInfoView(LoginRequired, View):
+    def get(self, request):
+        return render(request, 'usercenter-info.html', {
+
+        })

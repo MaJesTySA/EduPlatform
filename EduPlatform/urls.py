@@ -38,9 +38,8 @@ urlpatterns = [
     url(r'^org/', include(('organization.urls', 'organization'), namespace='org')),
     # 课程详情
     url(r'^course/', include(('courses.urls', 'courses'), namespace='course')),
+    url(r'^users/', include(('users.urls', 'users'), namespace='users')),
     # 上传文件的访问处理
     url(r'media/(?P<path>.*)$', serve, {'document_root': MEDIA_ROOT})
-
-
 
 ]
