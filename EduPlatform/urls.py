@@ -36,8 +36,11 @@ urlpatterns = [
     url(r'^forget/$', ForgetPwdView.as_view(), name='forget_pwd'),
     # 课程机构
     url(r'^org/', include(('organization.urls', 'organization'), namespace='org')),
+    # 课程详情
     url(r'^course/', include(('courses.urls', 'courses'), namespace='course')),
     # 上传文件的访问处理
     url(r'media/(?P<path>.*)$', serve, {'document_root': MEDIA_ROOT})
+
+
 
 ]

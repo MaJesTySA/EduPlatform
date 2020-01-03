@@ -4,9 +4,10 @@ from django.views.generic import View
 from django.http import HttpResponse
 
 # Create your views here.
+from courses.models import Course
 from operation.models import UserFavorite
 from organization.forms import UserAskModelForm
-from organization.models import CourseOrg, CityDict
+from organization.models import CourseOrg, CityDict, Teacher
 
 
 class OrgView(View):
@@ -151,3 +152,39 @@ class AddFavView(View):
             else:
                 return HttpResponse('{"status": "fail", "msg":"收藏出错"}',
                                     content_type='application/json')
+
+
+class TeacherListView(View):
+    def get(self, request):
+        all_teachers = Teacher.objects.all()
+        sort = request.GET.get('sort', '')
+
+        if sort:
+            if sort == 'hot':
+                all_teachers = all_teachers.order_by('-click_nums')
+
+        ranked_teacher = Teacher.objects.all().order_by('-click_nums')[:3]
+
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+        p = Paginator(all_teachers, 1, request=request)
+        teachers = p.page(page)
+        return render(request, 'teachers-list.html', {
+            'all_teachers': teachers,
+            'ranked_teachers': ranked_teacher,
+            'sort': sort
+        })
+
+
+class TeacherDetailView(View):
+    def get(self, request, teacher_id):
+        teacher = Teacher.objects.get(id=int(teacher_id))
+        teacher_courses = Course.objects.filter(teacher=teacher)
+        ranked_teacher = Teacher.objects.all().order_by('-click_nums')[:3]
+        return render(request, 'teacher-detail.html', {
+            'teacher': teacher,
+            'teacher_courses': teacher_courses,
+            'ranked_teachers': ranked_teacher,
+        })
