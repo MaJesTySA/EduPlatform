@@ -1,3 +1,4 @@
+from django.db.models import Q
 from pure_pagination import PageNotAnInteger, Paginator
 from django.shortcuts import render
 from django.views.generic import View
@@ -15,6 +16,11 @@ class OrgView(View):
         all_orgs = CourseOrg.objects.all()
         all_cities = CityDict.objects.all()
         hot_orgs = all_orgs.order_by('-click_nums')[:3]
+
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:
+            all_orgs = all_orgs.filter(Q(name__icontains=search_keywords) |
+                                             Q(desc__icontains=search_keywords))
 
         city_id = request.GET.get('city', '')
         if city_id:
@@ -157,6 +163,13 @@ class AddFavView(View):
 class TeacherListView(View):
     def get(self, request):
         all_teachers = Teacher.objects.all()
+
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:
+            all_teachers = all_teachers.filter(Q(name__icontains=search_keywords) |
+                                       Q(work_company__icontains=search_keywords) |
+                                       Q(work_position__icontains=search_keywords))
+
         sort = request.GET.get('sort', '')
 
         if sort:
@@ -174,7 +187,7 @@ class TeacherListView(View):
         return render(request, 'teachers-list.html', {
             'all_teachers': teachers,
             'ranked_teachers': ranked_teacher,
-            'sort': sort
+            'sort': sort,
         })
 
 
@@ -182,9 +195,18 @@ class TeacherDetailView(View):
     def get(self, request, teacher_id):
         teacher = Teacher.objects.get(id=int(teacher_id))
         teacher_courses = Course.objects.filter(teacher=teacher)
+        has_teacher_fav = False
+        if UserFavorite.objects.filter(user=request.user, fav_type=3, fav_id=teacher.id):
+            has_teacher_fav = True
+        has_org_fav = False
+        if UserFavorite.objects.filter(user=request.user, fav_type=2, fav_id=teacher.org.id):
+            has_org_fav = True
+
         ranked_teacher = Teacher.objects.all().order_by('-click_nums')[:3]
         return render(request, 'teacher-detail.html', {
             'teacher': teacher,
             'teacher_courses': teacher_courses,
             'ranked_teachers': ranked_teacher,
+            'has_teacher_fav': has_teacher_fav,
+            'has_org_fav': has_org_fav
         })

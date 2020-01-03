@@ -16,20 +16,45 @@
 <body>
 <section class="headerwrap ">
     <header>
-        <div class=" header">
-            <div class="top">
-                <div class="wp">
-                    <div class="fl"><p>服务电话：<b>33333333</b></p></div>
-                    <!--登录后跳转-->
-
-
-                    <a style="color:white" class="fr registerbtn" href="register.html">注册</a>
-                    <a style="color:white" class="fr loginbtn" href="login.html">登录</a>
-
-
+        <div class="header">
+            {% if request.user.is_authenticated %}
+                <div class="top">
+                    <div class="wp">
+                        <div class="fl"><p>服务电话：<b>33333333</b></p></div>
+                        <div class="personal">
+                            <dl class="user fr">
+                                <dd>{{ request.user.nick_name }}<img class="down fr" src="/static/images/top_down.png"/>
+                                </dd>
+                                <dt><img width="20" height="20" src="{{ MEDIA_URL }}{{ request.user.portrait }}"/>
+                                </dt>
+                            </dl>
+                            <div class="userdetail" style="display: none;">
+                                <dl>
+                                    <dt><img width="80" height="80"
+                                             src="{{ MEDIA_URL }}{{ request.user.portrait }}"/>
+                                    </dt>
+                                    <dd>
+                                        <h2>{{ request.user.nick_name }}</h2>
+                                        <p>{{ request.user.username }}</p>
+                                    </dd>
+                                </dl>
+                                <div class="btn">
+                                    <a class="personcenter fl" href="usercenter-info.html">进入个人中心</a>
+                                    <a class="fr" href="/logout/">退出</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
+            {% else %}
+                <div class="top">
+                    <div class="wp">
+                        <div class="fl"><p>服务电话：<b>33333333</b></p></div>
+                        <a style="color:white" class="fr registerbtn" href="/register/">注册</a>
+                        <a style="color:white" class="fr loginbtn" href="/login/">登录</a>
+                    </div>
+                </div>
+            {% endif %}
             <div class="middle">
                 <div class="wp">
                     <a href="index.html"><img class="fl" src="/static/images/logo.jpg"/></a>
@@ -49,22 +74,18 @@
                     </div>
                 </div>
             </div>
-
-
             <nav>
                 <div class="nav">
                     <div class="wp">
                         <ul>
-                            <li><a href="index.html">首页</a></li>
-                            <li>
-                                <a href="course-list.html">
-                                    公开课<img class="hot" src="/static/images/nav_hot.png">
-                                </a>
+                            <li {% if request.path == '/' %}class="active"{% endif %}><a href="{% url 'index' %}">首页</a></li>
+                            <li {% if request.path|slice:'7' == '/course' %}class="active"{% endif %}>
+                                <a href="{% url 'course:course_list' %}">公开课<img class="hot" src="/static/images/nav_hot.png"></a>
                             </li>
-                            <li>
-                                <a href="teachers-list.html">授课教师</a>
+                            <li {% if request.path|slice:'12' == '/org/teacher' %}class="active"{% endif %}>
+                                <a href="{% url 'org:teacher_list' %}">授课教师</a>
                             </li>
-                            <li class="active"><a href="{% url 'org:org_list' %}">授课机构</a></li>
+                            <li {% if request.path|slice:'9' == '/org/list' %}class="active"{% endif %}><a href="{% url 'org:org_list' %}">授课机构</a></li>
                         </ul>
                     </div>
                 </div>
@@ -75,13 +96,13 @@
 </section>
 <!--crumbs start-->
 {% block custom_bread %}
-<section>
-    <div class="wp">
-        <ul class="crumbs">
-            <li><a href="index.html">首页</a>></li>
-        </ul>
-    </div>
-</section>
+    <section>
+        <div class="wp">
+            <ul class="crumbs">
+                <li><a href="index.html">首页</a>></li>
+            </ul>
+        </div>
+    </section>
 {% endblock %}
 
 {% block content %}

@@ -1,3 +1,4 @@
+from django.db.models import Q
 from pure_pagination import PageNotAnInteger, Paginator
 from django.shortcuts import render
 from django.views.generic import View
@@ -14,6 +15,12 @@ class CourseListView(View):
 
         hot_courses = Course.objects.all().order_by('-click_nums')[:3]
         sort = request.GET.get('sort', '')
+
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:
+            all_courses = all_courses.filter(Q(name__icontains=search_keywords)|
+                                             Q(desc__icontains=search_keywords)|
+                                             Q(detail__icontains=search_keywords))
 
         if sort:
             if sort == 'students':
