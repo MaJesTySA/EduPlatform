@@ -1,12 +1,11 @@
-from django.shortcuts import render
 from pure_pagination import PageNotAnInteger, Paginator
 from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse
 
-# Create your views here.
-from courses.models import Course, CourseResource
-from operation.models import UserFavorite, CourseComment
+from courses.models import Course, CourseResource, Video
+from operation.models import UserFavorite, CourseComment, UserCourse
+from utils.utils import LoginRequired
 
 
 class CourseListView(View):
@@ -61,17 +60,34 @@ class CourseDescView(View):
         })
 
 
-class CourseInfoView(View):
+class CourseInfoView(LoginRequired, View):
     def get(self, request, course_id):
         course = Course.objects.get(id=int(course_id))
+
+        is_learned = UserCourse.objects.filter(user=request.user, course=course)
+        if not is_learned:
+            user_course = UserCourse(user=request.user, course=course)
+            user_course.save()
+
         all_resources = CourseResource.objects.filter(course=course)
+        #从UserCourse中取出该课程的所有学习用户
+        user_courses = UserCourse.objects.filter(course=course)
+        #得到该课程的所有学习用户id
+        user_ids = [user_course.user.id for user_course in user_courses]
+        #根据所有学习用户的id得到他们的UserCourse对象
+        all_user_courses = UserCourse.objects.filter(user_id__in=user_ids)
+        #根据UserCourse，从Course中得到课程的ID
+        course_ids = [user_course.course.id for user_course in all_user_courses]
+        #得到相关课程
+        related_courses = Course.objects.filter(id__in=course_ids).order_by('-click_nums')[:5]
         return render(request, 'course-video.html', {
             'course': course,
-            'course_resources': all_resources
+            'course_resources': all_resources,
+            'related_courses': related_courses
         })
 
 
-class CourseCommentView(View):
+class CourseCommentView(LoginRequired, View):
     def get(self, request, course_id):
         course = Course.objects.get(id=int(course_id))
         all_resources = CourseResource.objects.filter(course=course)
@@ -102,3 +118,31 @@ class AddCommentView(View):
         else:
             return HttpResponse('{"status": "fail", "msg":"评论失败"}',
                                 content_type='application/json')
+
+
+class VideoPlayView(View):
+    def get(self, request, video_id):
+        video = Video.objects.get(id=int(video_id))
+        course = video.lesson.course
+        is_learned = UserCourse.objects.filter(user=request.user, course=course)
+        if not is_learned:
+            user_course = UserCourse(user=request.user, course=course)
+            user_course.save()
+
+        all_resources = CourseResource.objects.filter(course=course)
+        #从UserCourse中取出该课程的所有学习用户
+        user_courses = UserCourse.objects.filter(course=course)
+        #得到该课程的所有学习用户id
+        user_ids = [user_course.user.id for user_course in user_courses]
+        #根据所有学习用户的id得到他们的UserCourse对象
+        all_user_courses = UserCourse.objects.filter(user_id__in=user_ids)
+        #根据UserCourse，从Course中得到课程的ID
+        course_ids = [user_course.course.id for user_course in all_user_courses]
+        #得到相关课程
+        related_courses = Course.objects.filter(id__in=course_ids).order_by('-click_nums')[:5]
+        return render(request, 'course-play.html', {
+            'course': course,
+            'course_resources': all_resources,
+            'related_courses': related_courses,
+            'video': video
+        })
