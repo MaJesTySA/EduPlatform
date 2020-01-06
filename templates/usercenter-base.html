@@ -27,12 +27,13 @@
                         <div class="personal">
                             <dl class="user fr">
                                 <dd>{{ user.nick_name }}<img class="down fr"
-                                                            src="{% static "images/top_down.png" %}"/></dd>
+                                                             src="{% static "images/top_down.png" %}"/></dd>
                                 <dt><img width="20" height="20" src="{{ MEDIA_URL }}{{ request.user.portrait }}"/></dt>
                             </dl>
                             <div class="userdetail">
                                 <dl>
-                                    <dt><img width="80" height="80" src="{{ MEDIA_URL }}{{ request.user.portrait }}"/></dt>
+                                    <dt><img width="80" height="80" src="{{ MEDIA_URL }}{{ request.user.portrait }}"/>
+                                    </dt>
                                     <dd>
                                         <h2>{{ request.user.nick_name }}</h2>
                                         <p>{{ request.user.username }}</p>
@@ -44,9 +45,9 @@
                                 </div>
                             </div>
                         </div>
-                        {#                        <a href="{% url 'users:mymessage' %}">#}
-                        {#                            <div class="msg-num"><span id="MsgNum">{{ request.user.unread_nums }}</span></div>#}
-                        {#                        </a>#}
+                        <a href="{% url 'users:mymessage' %}">
+                            <div class="msg-num"><span id="MsgNum">{{ request.user.unread_nums }}</span></div>
+                        </a>
                     {% else %}
                         <a style="color:white" class="fr registerbtn" href="{% url 'register' %}">注册</a>
                         <a style="color:white" class="fr loginbtn" href="{% url 'login' %}">登录</a>
@@ -80,13 +81,13 @@
         <div class="left">
             <ul>
                 <li class="active2"><a href="{% url 'users:user_info' %}">个人资料</a></li>
-                            <li ><a href="{% url 'users:mycourse' %}">我的课程</a></li>
-                            <li ><a href="{% url 'users:myfav_org' %}">我的收藏</a></li>
-                            <li >
-                                <a href="{% url 'users:mymessage' %}" style="position: relative;">
-                                    我的消息
-                                </a>
-                            </li>
+                <li><a href="{% url 'users:mycourse' %}">我的课程</a></li>
+                <li><a href="{% url 'users:myfav_org' %}">我的收藏</a></li>
+                <li>
+                    <a href="{% url 'users:mymessage' %}" style="position: relative;">
+                        我的消息
+                    </a>
+                </li>
             </ul>
         </div>
 

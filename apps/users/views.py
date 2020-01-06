@@ -264,3 +264,4 @@ class MyMessageView(LoginRequired, View):
         return render(request, 'usercenter-message.html', {
             'messages': messages
         })
+
