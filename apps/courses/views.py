@@ -70,7 +70,8 @@ class CourseDescView(View):
 class CourseInfoView(LoginRequired, View):
     def get(self, request, course_id):
         course = Course.objects.get(id=int(course_id))
-
+        course.students += 1
+        course.save()
         is_learned = UserCourse.objects.filter(user=request.user, course=course)
         if not is_learned:
             user_course = UserCourse(user=request.user, course=course)

@@ -2,9 +2,10 @@ import json
 
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django.urls import reverse
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
 
@@ -69,6 +70,12 @@ class LoginView(View):
                 return render(request, 'login.html', {'msg': '用户名或密码错误'})
         else:
             return render(request, 'login.html', {'login_form': login_form})
+
+
+class LogoutView(View):
+    def get(self, request):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
 
 
 class ActiveUserView(View):
@@ -254,7 +261,7 @@ class MyFavCourseView(LoginRequired, View):
 
 class MyMessageView(LoginRequired, View):
     def get(self, request):
-        all_messages = UserMessage.objects.filter(user=request.user.id)
+        all_messages = UserMessage.objects.filter(user=request.user.id, has_read=False)
         try:
             page = request.GET.get('page', 1)
         except PageNotAnInteger:
@@ -264,4 +271,3 @@ class MyMessageView(LoginRequired, View):
         return render(request, 'usercenter-message.html', {
             'messages': messages
         })
-
