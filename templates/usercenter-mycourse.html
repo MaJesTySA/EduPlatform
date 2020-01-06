@@ -1,5 +1,5 @@
 {% extends 'usercenter-base.html' %}
-{% block title %}我的课程- 慕学在线网{% endblock %}
+{% block title %}我的课程{% endblock %}
 
 {% block custom_bread %}
     <section>
@@ -25,11 +25,11 @@
 				<div class="group_list brief">
                     {% for user_course in user_courses %}
                     <div class="module1_5 box">
-                            <a href="{% url 'course:course_detail' user_course.course.id %}">
+                            <a href="{% url 'course:course_desc' user_course.course.id %}">
                                 <img width="214" height="190" class="scrollLoading" src="{{ MEDIA_URL }}{{ user_course.course.image }}"/>
                             </a>
                             <div class="des">
-                                <a href="{% url 'course:course_detail' user_course.course.id %}"><h2>{{ user_course.course.name }}</h2></a>
+                                <a href="{% url 'course:course_desc' user_course.course.id %}"><h2>{{ user_course.course.name }}</h2></a>
                                 <span class="fl">课时：<i class="key">{{ user_course.course.learn_times }}</i></span>
                                 <span class="fr">学习人数：{{ user_course.course.students }}</span>
                             </div>
@@ -39,7 +39,6 @@
                             </div>
                         </div>
                     {% endfor %}
-
 				</div>
 			</div>
 		</div>

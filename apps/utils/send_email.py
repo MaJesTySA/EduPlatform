@@ -8,6 +8,8 @@ from django.core.mail import send_mail
 def send_register_email(email, send_type='register'):
     email_record = EmailVerifyRecord()
     random_str = generate_random_str(16)
+    if send_type=='update_email':
+        random_str=generate_random_str(4)
 
     email_record.code = random_str
     email_record.email = email
@@ -29,7 +31,12 @@ def send_register_email(email, send_type='register'):
         send_status = send_mail(email_title, email_body, EMAIL_FROM, [email])
         if send_status:
             pass
-
+    elif send_type == 'update_email':
+        email_title = '修改邮箱连接'
+        email_body = '你的邮箱验证码为：{0}'.format(random_str)
+        send_status = send_mail(email_title, email_body, EMAIL_FROM, [email])
+        if send_status:
+            pass
 
 def generate_random_str(random_len=8):
     str = ''

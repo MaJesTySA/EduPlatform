@@ -29,7 +29,7 @@
                             </span>
                             <span class="fl upload-inp-box" style="margin-left:70px;">
                                 <span class="button btn-green btn-w100" id="jsAvatarBtn">修改头像</span>
-                                <input type="file" name="image" id="avatarUp" class="js-img-up"/>
+                                <input type="file" name="portrait" id="avatarUp" class="js-img-up"/>
                             </span>
                         </label>
                         {% csrf_token %}
@@ -45,7 +45,7 @@
                             <i class="error-tips"></i>
                         </li>
 						<li>生&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;日：
-                           <input type="text" id="birth_day" name="birday" value="{{ request.user.birthday|date:'Y-m-d' }}" readonly="readonly"/>
+                           <input type="text" id="birth_day" name="birthday" value="{{ request.user.birthday|date:'Y-m-d' }}" readonly="readonly"/>
                             <i class="error-tips"></i>
 						</li>
 						<li>性&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;别：

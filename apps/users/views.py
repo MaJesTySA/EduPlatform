@@ -1,10 +1,15 @@
+import json
+
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
-from users.forms import LoginForm, RegisterForm, ForgetPwdForm, ResetPwdForm
+
+from operation.models import UserCourse
+from users.forms import LoginForm, RegisterForm, ForgetPwdForm, ResetPwdForm, UploadImageForm, UserInfoForm
 from users.models import UserProfile, EmailVerifyRecord
 from utils.send_email import send_register_email
 from utils.utils import LoginRequired
@@ -131,4 +136,71 @@ class UserInfoView(LoginRequired, View):
     def get(self, request):
         return render(request, 'usercenter-info.html', {
 
+        })
+
+    def post(self, request):
+        user_info_form = UserInfoForm(request.POST, instance=request.user)
+        if user_info_form.is_valid():
+            user_info_form.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse(json.dumps(user_info_form.errors, ensure_ascii=False), content_type='application/json')
+
+
+
+class UploadImageView(LoginRequired, View):
+    def post(self, request):
+        image_form = UploadImageForm(request.POST, request.FILES, instance=request.user)
+        if image_form.is_valid():
+            image_form.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"status":"fail"}', content_type='application/json')
+
+
+class UpdatePwdView(View):
+    def post(self, request):
+        reset_pwd_form = ResetPwdForm(request.POST)
+        if reset_pwd_form.is_valid():
+            pwd = request.POST.get('password')
+            re_pwd = request.POST.get('re_password')
+            if pwd != re_pwd:
+                return HttpResponse('{"status":"fail","msg":"密码不一致"}', content_type='application/json')
+            user = request.user
+            user.password = make_password(pwd)
+            user.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"status":"fail","msg":"密码格式不对"}', content_type='application/json')
+
+
+class SendEmailCodeView(LoginRequired, View):
+    def get(self, request):
+        email = request.GET.get('email', '')
+        #邮箱是否存在
+        if UserProfile.objects.filter(email = email):
+            return HttpResponse('{"email":"邮箱已被注册"}', content_type='application/json')
+        send_register_email(email, 'update_email')
+        return HttpResponse('{"status":"success"}', content_type='application/json')
+
+
+class UpdateEmailView(LoginRequired, View):
+    def post(self, request):
+        email = request.POST.get('email', '')
+        code = request.POST.get('code', '')
+        existed_code = EmailVerifyRecord.objects.filter(email=email, code=code, send_type='update_email')
+        if existed_code:
+            user = request.user
+            user.email = email
+            user.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"email":"验证码出错"}', content_type='application/json')
+
+
+class MyCourseView(LoginRequired, View):
+    def get(self, request):
+        user_courses = UserCourse.objects.filter(user=request.user)
+        return render(request, 'usercenter-mycourse.html', {
+            'user_courses': user_courses
         })
