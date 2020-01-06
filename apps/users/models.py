@@ -19,6 +19,10 @@ class UserProfile(AbstractUser):
     def __str__(self):
         return self.username
 
+    def get_unread_messages_nums(self):
+        from operation.models import UserMessage
+        return UserMessage.objects.filter(user=self.id).count()
+
 
 class EmailVerifyRecord(models.Model):
     def __str__(self):

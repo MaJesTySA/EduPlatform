@@ -26,10 +26,9 @@
 				<ul class="tab_header messagehead">
 					<li class="active"><a href="/user/message/">个人消息</a> </li>
 				</ul>
+            </div>
 
-
-			</div>
-			<div class="messagelist">
+            <div class="messagelist">
                 {% for message in messages.object_list %}
                     <div class="messages">
                         <div class="fr">
@@ -40,11 +39,7 @@
                         </div>
                     </div>
                 {% endfor %}
-
-
 			</div>
-
-
 			<div class="pageturn pagerright">
                 <ul class="pagelist">
                 {% if messages.has_previous %}
@@ -65,7 +60,6 @@
                 {% if messages.has_next %}
                     <li class="long"><a href="?{{ messages.next_page_number.querystring }}">下一页</a></li>
                 {% endif %}
-
             </ul>
             </div>
 		</div>

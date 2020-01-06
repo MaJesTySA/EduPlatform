@@ -11,7 +11,7 @@
         <div class="brief group_list">
             {% for course in all_courses %}
                 <div class="module1_5 box">
-                    <a href="course-detail.html"><img width="214"
+                    <a href="{% url 'course:course_desc' course.id %}"><img width="214"
                                                       src="{{ MEDIA_URL }}{{ course.image }}"/></a>
                     <div class="des">
                         <a href="course-detail.html"><h2>{{ course.name }}</h2></a>
@@ -64,7 +64,6 @@
             <a class="green fr more" href="org-detail-desc.html">查看更多 > </a>
         </div>
         <div class="cont">{{ course_org.desc }}</div>
-
     </div>
 
 {% endblock %}
