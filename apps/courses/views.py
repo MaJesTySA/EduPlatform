@@ -6,7 +6,7 @@ from django.http import HttpResponse
 
 from courses.models import Course, CourseResource, Video
 from operation.models import UserFavorite, CourseComment, UserCourse
-from utils.utils import LoginRequired
+from utils.login_required import LoginRequired
 
 
 class CourseListView(View):

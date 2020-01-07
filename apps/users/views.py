@@ -3,59 +3,109 @@ import json
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
+from django.shortcuts import render_to_response
 
 from courses.models import Course
 from operation.models import UserCourse, UserFavorite, UserMessage
 from organization.models import CourseOrg, Teacher
 from users.forms import LoginForm, RegisterForm, ForgetPwdForm, ResetPwdForm, UploadImageForm, UserInfoForm
-from users.models import UserProfile, EmailVerifyRecord
-from utils.send_email import send_register_email
-from utils.utils import LoginRequired
+from users.models import UserProfile, EmailVerifyRecord, Banner
+from utils.send_email import send_email
+from utils.login_required import LoginRequired
 from pure_pagination import PageNotAnInteger, Paginator
+
+
+def page_not_found(request, exception):
+    response = render_to_response('404.html', {})
+    response.status_code = 404
+    return response
+
+
+def page_error(request):
+    response = render_to_response('500.html', {})
+    response.status_code = 500
+    return response
+
+
+class IndexView(View):
+    def get(self, request):
+        # 取出轮播图
+        all_banners = Banner.objects.all().order_by('index')
+        # 取出课程
+        courses = Course.objects.filter(is_banner=False)[:6]
+        banner_courses = Course.objects.filter(is_banner=True)[:3]
+        course_orgs = CourseOrg.objects.all()[:15]
+        return render(request, 'index.html', {
+            'all_banners': all_banners,
+            'courses': courses,
+            'banner_courses': banner_courses,
+            'course_orgs': course_orgs
+        })
 
 
 class RegisterView(View):
     def get(self, request):
         register_form = RegisterForm()
-        return render(request, 'register.html', {'register_form': register_form})
+        banner_courses = Course.objects.filter(is_banner=True)[:3]
+        return render(request, 'register.html', {'register_form': register_form,
+                                                 'banner_courses': banner_courses})
 
     def post(self, request):
         register_form = RegisterForm(request.POST)
+        banner_courses = Course.objects.filter(is_banner=True)[:3]
         if register_form.is_valid():
             user_name = request.POST.get('email', '')
             if UserProfile.objects.filter(email=user_name):
                 return render(request, 'register.html',
-                              {'msg': '用户已存在', 'register_form': register_form})
-            pass_word = request.POST.get('password', '')
-            user_profile = UserProfile()
-            user_profile.username = user_name
-            user_profile.email = user_name
-            user_profile.password = make_password(pass_word)
-            user_profile.is_active = False
-            user_profile.save()
+                              {'msg': '用户已存在',
+                               'register_form': register_form,
+                               'banner_courses': banner_courses})
+            password = request.POST.get('password', '')
+            re_password = request.POST.get('re_password', '')
+            nick_name = request.POST.get('nick_name', '')
+            if password == re_password:
+                user_profile = UserProfile()
+                user_profile.username = user_name
+                user_profile.email = user_name
+                user_profile.password = make_password(password)
+                user_profile.is_active = False
+                user_profile.nick_name = nick_name
+                user_profile.save()
 
-            user_message = UserMessage()
-            user_message.user = user_profile.id
-            user_message.message = '欢迎注册'
-            user_message.save()
+                user_message = UserMessage()
+                user_message.user = user_profile.id
+                user_message.message = '欢迎注册'
+                user_message.save()
 
-            send_register_email(user_name, 'register')
-            return render(request, 'login.html')
+                if send_email(user_name, 'register'):
+                    request.session['email'] = user_name
+                    return redirect('login')
+            else:
+                return render(request, 'register.html', {
+                    'msg': '两次输入的密码不一致',
+                    'banner_courses': banner_courses,
+                    'register_form': register_form,
+                })
         else:
-            return render(request, 'register.html', {'register_form': register_form})
+            return render(request, 'register.html', {'register_form': register_form,
+                                                     'banner_courses': banner_courses})
 
 
 class LoginView(View):
     def get(self, request):
-        return render(request, 'login.html', {})
+        banner_courses = Course.objects.filter(is_banner=True)[:3]
+        return render(request, 'login.html', {
+            'banner_courses': banner_courses,
+        })
 
     def post(self, request):
         login_form = LoginForm(request.POST)
+        banner_courses = Course.objects.filter(is_banner=True)[:3]
         if login_form.is_valid():
             user_name = request.POST.get('username', '')
             pass_word = request.POST.get('password', '')
@@ -63,13 +113,16 @@ class LoginView(View):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return render(request, 'index.html')
+                    return HttpResponseRedirect(reverse('index'))
                 else:
-                    return render(request, 'login.html', {'msg': '账户未激活'})
+                    return render(request, 'login.html', {'msg': '账户未激活',
+                                                          'banner_courses': banner_courses})
             else:
-                return render(request, 'login.html', {'msg': '用户名或密码错误'})
+                return render(request, 'login.html', {'msg': '用户名或密码错误',
+                                                      'banner_courses': banner_courses})
         else:
-            return render(request, 'login.html', {'login_form': login_form})
+            return render(request, 'login.html', {'login_form': login_form,
+                                                  'banner_courses': banner_courses})
 
 
 class LogoutView(View):
@@ -131,7 +184,7 @@ class ForgetPwdView(View):
         forget_pwd_form = ForgetPwdForm(request.POST)
         if forget_pwd_form.is_valid():
             email = request.POST.get('email')
-            send_register_email(email, 'forget')
+            send_email(email, 'forget')
             return render(request, 'send_success.html')
         else:
             return render(request, 'forgetpwd.html', {'forget_pwd_form': forget_pwd_form})
@@ -194,7 +247,7 @@ class SendEmailCodeView(LoginRequired, View):
         # 邮箱是否存在
         if UserProfile.objects.filter(email=email):
             return HttpResponse('{"email":"邮箱已被注册"}', content_type='application/json')
-        send_register_email(email, 'update_email')
+        send_email(email, 'update_email')
         return HttpResponse('{"status":"success"}', content_type='application/json')
 
 
@@ -262,6 +315,9 @@ class MyFavCourseView(LoginRequired, View):
 class MyMessageView(LoginRequired, View):
     def get(self, request):
         all_messages = UserMessage.objects.filter(user=request.user.id, has_read=False)
+        for message in all_messages:
+            message.has_read = True
+            message.save()
         try:
             page = request.GET.get('page', 1)
         except PageNotAnInteger:

@@ -22,6 +22,7 @@ class Course(models.Model):
     teacher = models.ForeignKey(Teacher, verbose_name='课程教师', null=True, blank=True, on_delete=models.CASCADE)
     need_know = models.CharField(max_length=300, verbose_name='课程须知', default='')
     teacher_tell = models.CharField(max_length=300, verbose_name='老师告诉你', default='')
+    is_banner = models.BooleanField(default=False, verbose_name='是否轮播')
 
     def __str__(self):
         return self.name

@@ -21,11 +21,12 @@ from django.views.generic import TemplateView
 from django.views.static import serve
 
 from EduPlatform.settings import MEDIA_ROOT
-from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ModifyPwdView, ResetView, LogoutView
+from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ModifyPwdView, ResetView, LogoutView, \
+    IndexView
 
 urlpatterns = [
     path('xadmin/', xadmin.site.urls),
-    url('^$', TemplateView.as_view(template_name='index.html'), name='index'),
+    url('^$', IndexView.as_view(), name='index'),
     url('^login/$', LoginView.as_view(), name='login'),
     url('^logout/$', LogoutView.as_view(), name='logout'),
     url('^register/$', RegisterView.as_view(), name='register'),
@@ -40,6 +41,9 @@ urlpatterns = [
     url(r'^course/', include(('courses.urls', 'courses'), namespace='course')),
     url(r'^users/', include(('users.urls', 'users'), namespace='users')),
     # 上传文件的访问处理
-    url(r'media/(?P<path>.*)$', serve, {'document_root': MEDIA_ROOT})
-
+    url(r'media/(?P<path>.*)$', serve, {'document_root': MEDIA_ROOT}),
+    # url(r'static/(?P<path>.*)$', serve, {'document_root': STATIC_ROOT}),
 ]
+
+handler404 = 'users.views.page_not_found'
+handler500 = 'users.views.page_error'

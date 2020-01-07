@@ -29,6 +29,7 @@ class CourseOrg(models.Model):
                                 verbose_name='机构类别')
     students = models.IntegerField(default=0, verbose_name='学习人数')
     course_nums = models.IntegerField(default=0, verbose_name='课程数')
+    tag = models.CharField(max_length=10, verbose_name='机构标签', default='知名高校')
 
     class Meta:
         verbose_name = '课程机构'
