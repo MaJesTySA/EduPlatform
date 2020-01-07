@@ -136,17 +136,16 @@ class LogoutView(View):
 
 class ActiveUserView(View):
     def get(self, request, active_code):
-        all_records = EmailVerifyRecord.objects.filter(code=active_code)
-        email = ''
-        if all_records:
-            for record in all_records:
-                email = record.email
-                user = UserProfile.objects.get(email=email)
-                user.is_active = True
-                user.save()
+        record = EmailVerifyRecord.objects.get(code=active_code)
+        if record:
+            email = record.email
+            user = UserProfile.objects.get(email=email)
+            user.is_active = True
+            user.save()
+            record.delete()
+            return redirect('/login?email=' + email)
         else:
             return request(request, 'active_fail.html')
-        return redirect('/login?email=' + email)
 
 
 class ResetView(View):
