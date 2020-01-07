@@ -23,17 +23,17 @@
 
    ```python
    class ActiveUserView(View):
-       def get(self, request, active_code):
-           record = EmailVerifyRecord.objects.get(code=active_code)
-           if record:
-               email = record.email
-               user = UserProfile.objects.get(email=email)
-               user.is_active = True
-               user.save()
-               record.delete()
-               return redirect('/login?email=' + email)
-           else:
-               return request(request, 'active_fail.html')
+    def get(self, request, active_code):
+        try:
+            record = EmailVerifyRecord.objects.get(code=active_code)
+            email = record.email
+            user = UserProfile.objects.get(email=email)
+            user.is_active = True
+            user.save()
+            record.delete()
+            return redirect('/login?email=' + email)
+        except Exception:
+            return render(request, 'active_fail.html')
    ```
 
    
