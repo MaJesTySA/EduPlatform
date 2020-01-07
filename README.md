@@ -15,7 +15,7 @@
 <div align="center">
     <img src="https://raw.githubusercontent.com/MaJesTySA/EduPlatform/master/imgs/register2.png" width="40%"/>
 </div>
-4. 注册成功发送邮件之后，会跳转到登录页面，并弹出邮件提示框。并且在用户名处会自动填写注册的邮箱。
+4. 注册成功发送邮件之后，会跳转到邮箱发送成功页面，而不是直接跳转到登录框。只有点击验证连接后，才会跳转到登录页面，弹出提示框“激活成功”。并且在用户名处会自动填写注册的邮箱。
 <div align="center">
     <img src="https://raw.githubusercontent.com/MaJesTySA/EduPlatform/master/imgs/login.png" width="70%"/>
 </div>

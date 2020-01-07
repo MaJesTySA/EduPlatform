@@ -83,8 +83,7 @@ class RegisterView(View):
                 user_message.save()
 
                 if send_email(user_name, 'register'):
-                    request.session['email'] = user_name
-                    return redirect('login')
+                    return render(request, 'send_success.html')
             else:
                 return render(request, 'register.html', {
                     'msg': '两次输入的密码不一致',
@@ -134,6 +133,7 @@ class LogoutView(View):
 class ActiveUserView(View):
     def get(self, request, active_code):
         all_records = EmailVerifyRecord.objects.filter(code=active_code)
+        email = ''
         if all_records:
             for record in all_records:
                 email = record.email
@@ -142,7 +142,8 @@ class ActiveUserView(View):
                 user.save()
         else:
             return request(request, 'active_fail.html')
-        return render(request, 'login.html')
+        request.session['email'] = email
+        return redirect('login')
 
 
 class ResetView(View):
