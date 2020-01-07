@@ -98,8 +98,10 @@ class RegisterView(View):
 class LoginView(View):
     def get(self, request):
         banner_courses = Course.objects.filter(is_banner=True)[:3]
+        email = request.GET.get('email')
         return render(request, 'login.html', {
             'banner_courses': banner_courses,
+            'email': email
         })
 
     def post(self, request):
@@ -115,10 +117,12 @@ class LoginView(View):
                     return HttpResponseRedirect(reverse('index'))
                 else:
                     return render(request, 'login.html', {'msg': '账户未激活',
-                                                          'banner_courses': banner_courses})
+                                                          'banner_courses': banner_courses,
+                                                          'login_form': login_form})
             else:
                 return render(request, 'login.html', {'msg': '用户名或密码错误',
-                                                      'banner_courses': banner_courses})
+                                                      'banner_courses': banner_courses,
+                                                      'login_form': login_form})
         else:
             return render(request, 'login.html', {'login_form': login_form,
                                                   'banner_courses': banner_courses})
@@ -142,8 +146,7 @@ class ActiveUserView(View):
                 user.save()
         else:
             return request(request, 'active_fail.html')
-        request.session['email'] = email
-        return redirect('login')
+        return redirect('/login?email=' + email)
 
 
 class ResetView(View):
