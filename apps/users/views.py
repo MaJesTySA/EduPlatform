@@ -177,6 +177,7 @@ class ModifyPwdView(View):
             user = UserProfile.objects.get(email=email)
             user.password = make_password(pwd)
             user.save()
+            #删除数据库记录
             email_record = EmailVerifyRecord.objects.filter(email=email)
             email_record.delete()
             return redirect('/login?type=reset_pwd')
