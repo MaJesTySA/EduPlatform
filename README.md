@@ -23,17 +23,17 @@
 
    ```python
    class ActiveUserView(View):
-    def get(self, request, active_code):
-        try:
-            record = EmailVerifyRecord.objects.get(code=active_code)
-            email = record.email
-            user = UserProfile.objects.get(email=email)
-            user.is_active = True
-            user.save()
-            record.delete()
-            return redirect('/login?email=' + email)
-        except Exception:
-            return render(request, 'active_fail.html')
+       def get(self, request, active_code):
+           try:
+               record = EmailVerifyRecord.objects.get(code=active_code)
+               email = record.email
+               user = UserProfile.objects.get(email=email)
+               user.is_active = True
+               user.save()
+               record.delete()
+               return redirect('/login?email=' + email)
+           except Exception:
+               return render(request, 'active_fail.html')
    ```
 
 ## 2020-1-13
@@ -42,19 +42,20 @@
 
 1. 从`register.html`、`login.html`等页面中提取出了公共部分`register_base.html`。这些页面直接继承公共页面，删除了大量重复代码。
 
-2. 现在重设密码页面`password_reset.html`也继承公共页面，使得风格与登录页面类似。
-<div align="center">
-    <img src="https://raw.githubusercontent.com/MaJesTySA/EduPlatform/master/imgs/resetpwd2.png" width="60%"/>
-</div>
+2. 现在找回密码页面`forgetpwd.html`的轮播图也是动态加载的。
+3. 现在重设密码页面`password_reset.html`也继承公共页面，使得风格与登录页面类似。
 
-3. 现在找回密码页面`forgetpwd.html`的轮播图也是动态加载的。
+<div align="center">
+    <img src="https://raw.githubusercontent.com/MaJesTySA/EduPlatform/master/imgs/resetpwd2.png" width="40%"/>
+</div>
 
 4. 优化了找回密码的逻辑。
-   
+
    4.1 在发送邮件之前，先判断用户是否存在。
+
    <div align="center">
-    <img src="https://raw.githubusercontent.com/MaJesTySA/EduPlatform/master/imgs/resetpwd1.png" width="60%"/>
-</div>
+    <img src="https://raw.githubusercontent.com/MaJesTySA/EduPlatform/master/imgs/resetpwd1.png" width="40%"/>
+   </div>
 
 ```python
 #class ForgetPwdView
@@ -76,14 +77,14 @@ def post(self, request):
         return render(request, 'forgetpwd.html', {'forget_pwd_form': forget_pwd_form,
                                                       'banner_courses': banner_courses})
 ```
-   
+
    4.2 用户重设密码成功后，跳转到登录页面会提示。
-   <div align="center">
-    <img src="https://raw.githubusercontent.com/MaJesTySA/EduPlatform/master/imgs/resetpwd3.png" width="60%"/>
+<div align="center">
+<img src="https://raw.githubusercontent.com/MaJesTySA/EduPlatform/master/imgs/resetpwd3.png" width="40%"/>
 </div>
-  
+
    4.3 用户重设密码成功之后，数据库会删除记录。
-   
+
    ```python
 class ModifyPwdView(View):
     def post(self, request):
@@ -97,4 +98,4 @@ class ModifyPwdView(View):
             return redirect('/login?type=reset_pwd')
         else:
             #省略
-```
+   ```
