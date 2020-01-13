@@ -28,7 +28,7 @@ urlpatterns = [
     path('xadmin/', xadmin.site.urls),
     url('^$', IndexView.as_view(), name='index'),
     url('^login/$', LoginView.as_view(), name='login'),
-    url('^login(?P<email>.*)/$', LoginView.as_view(), name='login'),
+    url('^login(?P<type>.*)/$', LoginView.as_view(), name='login'),
     url('^logout/$', LogoutView.as_view(), name='logout'),
     url('^register/$', RegisterView.as_view(), name='register'),
     url(r'^captcha/', include('captcha.urls')),

@@ -98,11 +98,16 @@ class RegisterView(View):
 class LoginView(View):
     def get(self, request):
         banner_courses = Course.objects.filter(is_banner=True)[:3]
-        email = request.GET.get('email')
-        return render(request, 'login.html', {
-            'banner_courses': banner_courses,
-            'email': email
-        })
+        type = request.GET.get('type')
+        if type == 'reset_pwd':
+            return render(request, 'login.html', {
+                'banner_courses': banner_courses,
+                'reset': type
+            })
+        else:
+            return render(request, 'login.html', {
+                'banner_courses': banner_courses,
+                'email': type})
 
     def post(self, request):
         login_form = LoginForm(request.POST)
@@ -143,7 +148,7 @@ class ActiveUserView(View):
             user.is_active = True
             user.save()
             record.delete()
-            return redirect('/login?email=' + email)
+            return redirect('/login?type=' + email)
         except Exception:
             return render(request, 'active_fail.html')
 
@@ -172,7 +177,9 @@ class ModifyPwdView(View):
             user = UserProfile.objects.get(email=email)
             user.password = make_password(pwd)
             user.save()
-            return render(request, 'login.html')
+            email_record = EmailVerifyRecord.objects.filter(email=email)
+            email_record.delete()
+            return redirect('/login?type=reset_pwd')
         else:
             email = request.POST.get('email')
             return render(request, 'password_reset.html', {'email': email, 'reset_pwd_form': reset_pwd_form})
@@ -180,19 +187,32 @@ class ModifyPwdView(View):
 
 class ForgetPwdView(View):
     def get(self, request):
+        banner_courses = Course.objects.filter(is_banner=True)[:3]
         forget_pwd_form = ForgetPwdForm()
-        return render(request, 'forgetpwd.html', {'forget_pwd_form': forget_pwd_form})
+        return render(request, 'forgetpwd.html', {'forget_pwd_form': forget_pwd_form,
+                                                  'banner_courses': banner_courses})
 
     def post(self, request):
         forget_pwd_form = ForgetPwdForm(request.POST)
+        banner_courses = Course.objects.filter(is_banner=True)[:3]
         if forget_pwd_form.is_valid():
             email = request.POST.get('email')
-            send_email(email, 'forget')
-            return render(request, 'send_success.html')
+            user = UserProfile.objects.filter(email=email)
+            #检查账户是否存在，不存在则不发送邮箱
+            if user:
+                send_email(email, 'forget')
+                return render(request, 'send_success.html')
+            else:
+                return render(request, 'forgetpwd.html', {'forget_pwd_form': forget_pwd_form,
+                                                          'banner_courses': banner_courses,
+                                                          'msg':'账户不存在！'})
         else:
-            return render(request, 'forgetpwd.html', {'forget_pwd_form': forget_pwd_form})
+            return render(request, 'forgetpwd.html', {'forget_pwd_form': forget_pwd_form,
+                                                      'banner_courses': banner_courses})
 
 
+# django默认使用username作为登录名，这个类覆写了authenticate方法，使用email或者username来登录
+# 需要在settings.py AUTHENTION_BACKENDS添加该类。
 class CustomBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
